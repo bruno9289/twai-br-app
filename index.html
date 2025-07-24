@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TWAI BR - App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body, html { height: 100%; background: #000; color: #fff; overflow: hidden; }
+    .video-container { height: 100%; width: 100%; position: relative; overflow: hidden; }
+    .video-slide {
+      height: 100%; width: 100%;
+      display: none; position: absolute; top: 0; left: 0;
+      background: #000;
+      justify-content: center; align-items: center;
+    }
+    .video-slide.active { display: flex; z-index: 1; }
+    iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+    .video-fake { font-size: 24px; }
+    .menu-inferior {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
+      background: #111; display: flex; justify-content: space-around; align-items: center;
+      border-top: 1px solid #333; z-index: 10;
+    }
+    .botao-menu {
+      display: flex; flex-direction: column; align-items: center;
+      font-size: 12px; color: #aaa; text-decoration: none; position: relative;
+    }
+    .botao-menu img { width: 24px; height: 24px; margin-bottom: 4px; }
+    .botao-menu.ativo { color: #fff; }
+    .notificacao {
+      position: absolute; top: 2px; right: 2px; width: 10px; height: 10px;
+      background: red; border-radius: 50%;
+    }
+    .botao-publicar {
+      width: 50px; height: 50px; background: orange; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 25px;
+      box-shadow: 0 0 10px orange; cursor: pointer;
+    }
+    .botao-publicar img { width: 30px; height: 30px; filter: brightness(0) invert(1); }
+    #acoes {
+      position: absolute; bottom: 100px; left: 20px;
+      display: flex; flex-direction: column; gap: 25px; align-items: flex-start;
+      z-index: 2;
+    }
+    .botao-acao {
+      cursor: pointer; font-size: 28px; color: #aaa;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .botao-acao span { font-size: 14px; }
+    .liked { color: #ff4444; }
+    .seguindo { color: #44ff44 !important; }
+  </style>
+</head>
+<body>
+
+<div class="video-container" id="videoContainer">
+  <div class="video-slide active">
+    <iframe 
+      src="https://www.youtube.com/embed/0tr9_qN04ZE?autoplay=1&playsinline=1&loop=1&playlist=0tr9_qN04ZE" 
+      allow="autoplay; encrypted-media" 
+      allowfullscreen
+    ></iframe>
+  </div>
+  <div class="video-slide">
+    <div class="video-fake">🎥 Vídeo 2</div>
+  </div>
+  <div class="video-slide">
+    <div class="video-fake">🎥 Vídeo 3</div>
+  </div>
+
+  <div id="acoes">
+    <div id="btnCurtir" class="botao-acao" title="Curtir">❤️ <span id="contarCurtidas">0</span></div>
+    <div id="btnSeguir" class="botao-acao" title="Seguir">➕ Seguir</div>
+    <div id="btnComentar" class="botao-acao" title="Comentar">💬 <span>Comentar</span></div>
+    <div id="btnCompartilhar" class="botao-acao" title="Compartilhar">🔗 <span>Compartilhar</span></div>
+    <div id="btnChat" class="botao-acao" style="display:none;" title="Chat">📨 <span>Bate-papo</span></div>
+  </div>
+</div>
+
+<div class="menu-inferior">
+  <a href="#" class="botao-menu ativo">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/home.png" alt="Início"> Início
+  </a>
+  <a href="#" class="botao-menu">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/controller.png" alt="Jogos"> Jogos
+  </a>
+  <div class="botao-publicar" onclick="alert('📷 Abrir câmera ou galeria')">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/plus-math.png" alt="Publicar">
+  </div>
+  <a href="#" class="botao-menu" id="btnMensagens">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/speech-bubble.png" alt="Mensagens">
+    Mensagens
+    <div class="notificacao" id="notifMensagem" style="display: none;"></div>
+  </a>
+  <a href="#" class="botao-menu">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/user.png" alt="Perfil"> Perfil
+  </a>
+</div>
+
+<script>
+  let curtidas = 0;
+  const btnCurtir = document.getElementById("btnCurtir");
+  const contarCurtidas = document.getElementById("contarCurtidas");
+
+  btnCurtir.onclick = () => {
+    curtidas++;
+    contarCurtidas.textContent = curtidas;
+    btnCurtir.classList.add("liked");
+  };
+
+  const btnSeguir = document.getElementById("btnSeguir");
+  let seguindo = false;
+
+  btnSeguir.onclick = () => {
+    seguindo = !seguindo;
+    btnSeguir.textContent = seguindo ? "✅ Seguindo" : "➕ Seguir";
+    btnSeguir.classList.toggle("seguindo", seguindo);
+    document.getElementById("btnChat").style.display = seguindo ? "flex" : "none";
+  };
+
+  document.getElementById("btnComentar").onclick = () => alert("📝 Abrir comentários...");
+  document.getElementById("btnCompartilhar").onclick = () => alert("🔗 Link copiado!");
+  document.getElementById("btnChat").onclick = () => alert("📨 Abrindo chat com este usuário...");
+
+  // Simular nova mensagem recebida
+  let mensagemRecebida = true;
+  const notif = document.getElementById("notifMensagem");
+  if (mensagemRecebida) notif.style.display = "block";
+
+  document.getElementById("btnMensagens").onclick = () => {
+    notif.style.display = "none";
+    alert("📬 Abrir lista de mensagens");
+  };
+
+  // Rolagem para trocar vídeos
+  let slides = document.querySelectorAll(".video-slide");
+  let index = 0;
+  let startY = 0;
+
+  window.addEventListener("touchstart", e => startY = e.touches[0].clientY);
+  window.addEventListener("touchend", e => {
+    let endY = e.changedTouches[0].clientY;
+    if (startY - endY > 50) nextVideo();
+  });
+
+  function nextVideo() {
+    slides[index].classList.remove("active");
+    index = (index + 1) % slides.length;
+    slides[index].classList.add("active");
+  }
+</script>
+
+</body>
+</html>
